@@ -84,13 +84,15 @@ test.describe("EmbedPrep — Full App Test Suite", () => {
     await expect(page.getByRole("heading", { name: /Bit Manipulation/ })).toBeVisible();
   });
 
-  test("Industry Intel page loads with all three tabs", async ({ page }) => {
+  test("Industry Intel page loads with all primary tabs", async ({ page }) => {
     await page.goto("/industry");
     await expect(page.getByRole("heading", { name: "Industry Intel" })).toBeVisible();
     // Check tab buttons exist
     await expect(page.getByRole("button", { name: /Companies/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /Real Questions/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /Industry Topics/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Trends Feed/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Forecasting/ })).toBeVisible();
   });
 
   test("Industry page company cards expand on click", async ({ page }) => {
@@ -109,6 +111,22 @@ test.describe("EmbedPrep — Full App Test Suite", () => {
     await expect(page.locator("select").first()).toBeVisible();
     // Should show question cards
     await expect(page.getByText("questions found")).toBeVisible();
+  });
+
+  test("Industry page trends feed shows auto-updating dashboard", async ({ page }) => {
+    await page.goto("/industry");
+    await page.getByRole("button", { name: /Trends Feed/ }).click();
+    await expect(page.getByRole("heading", { name: /Semiconductors, robotics, and automation signals/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Refresh feed|Refreshing/ })).toBeVisible();
+    await expect(page.getByText(/signals found/)).toBeVisible();
+  });
+
+  test("Industry page forecasting tab shows trend analysis and skill map", async ({ page }) => {
+    await page.goto("/industry");
+    await page.getByRole("button", { name: /Forecasting/ }).click();
+    await expect(page.getByRole("heading", { name: /Architecture, technology, and skills outlook/ })).toBeVisible();
+    await expect(page.getByText("2-5 Year Skill Map")).toBeVisible();
+    await expect(page.getByText("Technologies Losing Momentum")).toBeVisible();
   });
 
   test("Chip Lab page filters and compares MCUs", async ({ page }) => {

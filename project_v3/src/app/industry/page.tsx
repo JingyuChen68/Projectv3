@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import IndustryTrendsDashboard from "@/components/IndustryTrendsDashboard";
+import TrendForecastPanel from "@/components/TrendForecastPanel";
 import { COMPANY_PROFILES, REAL_QUESTIONS as RQ1, INDUSTRY_TOPICS as IT1 } from "@/data/industryIntel";
 import { REAL_QUESTIONS_EXTRA as RQ2, INDUSTRY_TOPICS_EXTRA as IT2 } from "@/data/industryIntelExtra";
 import { REAL_QUESTIONS_EXTRA2 as RQ3, INDUSTRY_TOPICS_EXTRA2 as IT3 } from "@/data/industryIntelExtra2";
+import { CURATED_TREND_SIGNALS, TREND_FORECASTS } from "@/data/industryTrends";
 
 const REAL_QUESTIONS = [...RQ1, ...RQ2, ...RQ3];
 const INDUSTRY_TOPICS = [...IT1, ...IT2, ...IT3];
 
-type Tab = "companies" | "questions" | "topics";
+type Tab = "companies" | "questions" | "topics" | "trends" | "forecast";
 
 const TOPIC_CATEGORIES = [
   "All",
@@ -23,20 +26,6 @@ const TOPIC_CATEGORIES = [
 ];
 
 const Q_CATEGORIES = ["All", "Technical", "System Design", "Behavioral", "Coding", "Hardware", "Debug"];
-
-const SECTOR_ICONS: Record<string, string> = {
-  "Automotive / EV": "🚗",
-  "Consumer Electronics": "🍎",
-  Semiconductor: "💾",
-  Aerospace: "🚀",
-  "Medical Devices": "🏥",
-  Agriculture: "🌾",
-  Robotics: "🤖",
-  "Cloud / IoT": "☁️",
-  "Search / AI / Autonomous": "🔍",
-  "Industrial Automation": "🏭",
-  Navigation: "📍",
-};
 
 const DIFF_COLORS: Record<string, string> = {
   Easy: "bg-emerald-100 text-emerald-700",
@@ -58,7 +47,6 @@ const CAT_COLORS: Record<string, string> = {
 export default function IndustryPage() {
   const [tab, setTab] = useState<Tab>("companies");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [topicCat, setTopicCat] = useState("All");
   const [qCat, setQCat] = useState("All");
   const [qCompanyFilter, setQCompanyFilter] = useState("All");
@@ -113,7 +101,7 @@ export default function IndustryPage() {
           <h1 className="text-3xl font-bold mb-2">Industry Intel</h1>
           <p className="text-orange-100 text-lg max-w-2xl">
             Real companies, real interview questions, real engineering challenges.
-            {" "}{COMPANY_PROFILES.length} companies, {REAL_QUESTIONS.length} interview questions, and {INDUSTRY_TOPICS.length} industry topics.
+            {" "}{COMPANY_PROFILES.length} companies, {REAL_QUESTIONS.length} interview questions, {INDUSTRY_TOPICS.length} industry topics, {CURATED_TREND_SIGNALS.length} trend signals, and {TREND_FORECASTS.length} forecasts.
           </p>
         </div>
         <svg className="absolute right-4 top-4 w-36 h-36 opacity-10" viewBox="0 0 100 100">
@@ -128,16 +116,18 @@ export default function IndustryPage() {
       </div>
 
       {/* Tab navigation */}
-      <div className="flex gap-2 bg-white rounded-xl border border-gray-200 p-1.5">
+      <div className="flex flex-wrap gap-2 bg-white rounded-xl border border-gray-200 p-1.5">
         {[
           { key: "companies" as Tab, label: "Companies", icon: "🏢", count: COMPANY_PROFILES.length },
           { key: "questions" as Tab, label: "Real Questions", icon: "❓", count: REAL_QUESTIONS.length },
           { key: "topics" as Tab, label: "Industry Topics", icon: "🌍", count: INDUSTRY_TOPICS.length },
+          { key: "trends" as Tab, label: "Trends Feed", icon: "📡", count: CURATED_TREND_SIGNALS.length },
+          { key: "forecast" as Tab, label: "Forecasting", icon: "📈", count: TREND_FORECASTS.length },
         ].map((t) => (
           <button
             key={t.key}
             onClick={() => { setTab(t.key); setSearchQuery(""); }}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex min-w-36 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
               tab === t.key
                 ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow"
                 : "text-gray-600 hover:bg-gray-50"
@@ -161,6 +151,8 @@ export default function IndustryPage() {
         placeholder={
           tab === "companies" ? "Search companies, sectors, tech stacks..." :
           tab === "questions" ? "Search questions, companies..." :
+          tab === "trends" ? "Search trends, companies, technologies..." :
+          tab === "forecast" ? "Search forecasts, skills, architectures..." :
           "Search topics, tags..."
         }
         className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300 outline-none bg-white"
@@ -320,6 +312,16 @@ export default function IndustryPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* ─── TRENDS FEED TAB ─── */}
+      {tab === "trends" && (
+        <IndustryTrendsDashboard searchQuery={searchQuery} />
+      )}
+
+      {/* ─── FORECASTING TAB ─── */}
+      {tab === "forecast" && (
+        <TrendForecastPanel searchQuery={searchQuery} />
       )}
 
       {/* ─── TOPICS TAB ─── */}

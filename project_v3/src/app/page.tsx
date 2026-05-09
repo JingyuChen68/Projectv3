@@ -131,7 +131,7 @@ export default function Dashboard() {
         <ActionTile href="/questions" index="A2" title="Questions" detail="Practice and track answers" />
         <ActionTile href="/chips" index="A3" title="Chip Lab" detail="Compare specs and supply" />
         <ActionTile href="/career" index="A4" title="Career" detail="Map roles and milestones" />
-        <ActionTile href="/industry" index="A5" title="Industry" detail="Study companies and trends" />
+        <ActionTile href="/industry" index="A5" title="Industry" detail="Watch trends and forecasts" />
         <ActionTile href="/companies" index="A6" title="Pipeline" detail="Track research and interviews" />
         <ActionTile href="/checklist" index="A7" title="Checklist" detail="Final readiness review" />
       </section>
