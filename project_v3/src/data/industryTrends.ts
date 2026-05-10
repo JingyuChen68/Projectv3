@@ -885,7 +885,7 @@ export const CURATED_TREND_SIGNALS: IndustryTrendSignal[] = [
   ...EXPANDED_CURATED_TREND_SIGNALS,
 ];
 
-export const TREND_FORECASTS: TrendForecast[] = [
+const BASE_TREND_FORECASTS: TrendForecast[] = [
   {
     id: "heterogeneous-edge",
     title: "Heterogeneous edge compute becomes the default embedded architecture",
@@ -961,6 +961,134 @@ export const TREND_FORECASTS: TrendForecast[] = [
     skills: ["RTOS design", "bootloaders", "fault isolation", "observability"],
     watchouts: ["overengineering small products", "certification constraints", "RAM footprint"],
   },
+];
+
+type ForecastLens = {
+  id: string;
+  titlePrefix: string;
+  confidenceDelta: number;
+  signal: string;
+  skill: string;
+  watchout: string;
+  timeframe: TrendForecast["timeframe"];
+  direction: TrendForecast["direction"];
+  summary: (seed: TrendExpansionSeed) => string;
+  whyItMatters: (seed: TrendExpansionSeed) => string;
+};
+
+const FORECAST_LENSES: ForecastLens[] = [
+  {
+    id: "architecture",
+    titlePrefix: "Architecture forecast",
+    confidenceDelta: 4,
+    signal: "architecture roadmaps",
+    skill: "system partitioning",
+    watchout: "integration complexity",
+    timeframe: "1-3 years",
+    direction: "Gaining traction",
+    summary: (seed) =>
+      `${seed.title} is likely to influence architecture decisions as teams balance performance, power, safety, cost, and lifecycle risk.`,
+    whyItMatters: (seed) =>
+      `This matters because ${seed.impact.charAt(0).toLowerCase()}${seed.impact.slice(1)} The practical edge is explaining the tradeoff, not just naming the trend.`,
+  },
+  {
+    id: "skills",
+    titlePrefix: "Skills forecast",
+    confidenceDelta: 1,
+    signal: "job descriptions and interview loops",
+    skill: "hands-on implementation",
+    watchout: "resume keyword inflation",
+    timeframe: "1-3 years",
+    direction: "Gaining traction",
+    summary: (seed) =>
+      `The skill market around ${seed.tags.slice(0, 2).join(" and ")} should grow as this trend moves from prototypes into production workflows.`,
+    whyItMatters: (seed) =>
+      `Candidates can turn ${seed.title.toLowerCase()} into stronger interview evidence by showing measured constraints, failure modes, and debugging depth.`,
+  },
+  {
+    id: "adoption",
+    titlePrefix: "Adoption forecast",
+    confidenceDelta: -2,
+    signal: "supplier roadmaps and product launches",
+    skill: "technology evaluation",
+    watchout: "pilot-to-production gap",
+    timeframe: "2-5 years",
+    direction: "Gaining traction",
+    summary: (seed) =>
+      `${seed.title} should see uneven adoption: fast in teams with clear ROI, slower where certification, integration, or supply risk dominates.`,
+    whyItMatters: (seed) =>
+      `The right forecast is not yes-or-no adoption. It is knowing which ${seed.domain.toLowerCase()} products benefit first and which constraints delay rollout.`,
+  },
+  {
+    id: "risk",
+    titlePrefix: "Risk forecast",
+    confidenceDelta: -6,
+    signal: "field failures, security reviews, and validation cost",
+    skill: "risk-driven design review",
+    watchout: "overcommitting before ecosystem maturity",
+    timeframe: "2-5 years",
+    direction: "Stable demand",
+    summary: (seed) =>
+      `${seed.title} will create new reliability, security, validation, or maintainability questions as deployments scale.`,
+    whyItMatters: (seed) =>
+      `Forecasting the risk side helps separate durable engineering bets from hype. Watch ${seed.tags.slice(0, 3).join(", ")} for maturity signals.`,
+  },
+];
+
+function forecastConfidence(seed: TrendExpansionSeed, lens: ForecastLens) {
+  const momentumBase: Record<TrendMomentum, number> = {
+    Accelerating: 84,
+    Emerging: 76,
+    Watching: 70,
+  };
+
+  const typeBoost: Record<TrendSignalType, number> = {
+    "Chip Release": 3,
+    "Supply Chain": 1,
+    "Company Move": 2,
+    "Emerging Tech": 0,
+    Standards: 4,
+  };
+
+  return Math.max(58, Math.min(94, momentumBase[seed.momentum] + typeBoost[seed.signalType] + lens.confidenceDelta));
+}
+
+const GENERATED_TREND_FORECASTS: TrendForecast[] = TREND_EXPANSION_SEEDS.flatMap((seed) =>
+  FORECAST_LENSES.map((lens) => ({
+    id: `${seed.id}-${lens.id}-forecast`,
+    title: `${lens.titlePrefix}: ${seed.title}`,
+    direction: lens.direction,
+    domain: seed.domain,
+    timeframe: lens.timeframe,
+    confidence: forecastConfidence(seed, lens),
+    summary: lens.summary(seed),
+    whyItMatters: lens.whyItMatters(seed),
+    signals: [
+      lens.signal,
+      seed.signalType,
+      seed.momentum,
+      ...seed.tags.slice(0, 2),
+    ],
+    skills: [
+      lens.skill,
+      ...seed.tags.slice(0, 3),
+      seed.domain === "Automation"
+        ? "industrial systems thinking"
+        : seed.domain === "Robotics"
+          ? "robotics systems debugging"
+          : "silicon-aware embedded design",
+    ],
+    watchouts: [
+      lens.watchout,
+      seed.horizon,
+      seed.signalType === "Supply Chain" ? "supplier volatility" : "ecosystem maturity",
+    ],
+  }))
+);
+
+export const TREND_FORECASTS: TrendForecast[] = [
+  ...BASE_TREND_FORECASTS,
+  ...GENERATED_TREND_FORECASTS,
 ];
 
 export const SKILLS_FORECAST: SkillForecast[] = [
