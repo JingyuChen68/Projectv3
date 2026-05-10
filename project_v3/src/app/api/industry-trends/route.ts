@@ -7,7 +7,7 @@ import {
   type TrendMomentum,
   type TrendSignalType,
 } from "@/data/industryTrends";
-
+// added
 export const dynamic = "force-dynamic";
 
 interface FeedFetchResult {
@@ -296,7 +296,10 @@ export async function GET() {
   const feedResults = await Promise.all(TREND_SOURCE_QUERIES.map(fetchDomainFeed));
   const liveSignals = sortByPublishedAt(dedupeByTitle(feedResults.flatMap((result) => result.items))).slice(0, 18);
   const hasLiveSignals = liveSignals.length > 0;
-  const signals = hasLiveSignals ? liveSignals : fallbackSignals(updatedAt);
+  const curatedSignals = fallbackSignals(updatedAt);
+  const signals = hasLiveSignals
+    ? dedupeByTitle([...liveSignals, ...curatedSignals])
+    : curatedSignals;
 
   return NextResponse.json({
     signals,
